@@ -1,14 +1,14 @@
 
 import sys
 import csv
+import traceback
 from cStringIO import StringIO
 from pprint import pprint
 from itertools import izip
 from copy import copy
+from dateutil import parser as date_parser
 
-import traceback
 from csvu import default_arg_parser, writer_make
-
 
 class WADialect(csv.Dialect):
     doublequote = False
@@ -26,7 +26,8 @@ def webassign_parser_d(f):
     # Course/file information
     coursename = f.readline().strip()
     instructor = f.readline().strip()
-    created    = f.readline().strip()
+    created0   = f.readline().strip()
+    created    = date_parser.parse(created0).isoformat()
 
     # Blank line
     f.readline() 
@@ -57,7 +58,7 @@ def webassign_parser_d(f):
     # Clip blank columns
     h_rows = [row[i_h_total:] for row in h_rows]
 
-    assignments = [{'name': col[0], 'due': col[1], 'total': col[2]} for col in izip(*h_rows)]
+    assignments = [{'name': col[0], 'due': date_parser.parse(col[1]).isoformat(), 'total': col[2]} for col in izip(*h_rows)]
 
     ##
     ## The rest of the file is the scores.
@@ -97,7 +98,7 @@ def to_meta_arg_parser():
 
 def to_meta_program():
 
-    parser = to_csv_arg_parser()
+    parser = to_meta_arg_parser()
 
     args = parser.parse_args()
 
