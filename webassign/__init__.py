@@ -4,11 +4,13 @@ import csv
 import traceback
 from cStringIO import StringIO
 from pprint import pprint
+import cPickle as pickle
 from itertools import izip
 from copy import copy
 from dateutil import parser as date_parser
 
-from csvu import default_arg_parser, writer_make
+from csvu import writer_make
+from csvu.cli import default_arg_parser
 
 class WADialect(csv.Dialect):
     doublequote = False
@@ -94,6 +96,12 @@ def to_meta_arg_parser():
             default='-',
             help='Input WebAssign report file, defaults to STDIN.'
         )
+    parser.add_argument(
+            '--type', 
+            choices=['print', 'pickle'],
+            default='print',
+            help='The format of the output.'
+        )
     return parser
 
 def to_meta_program():
@@ -113,10 +121,11 @@ def to_meta_program():
         del parser_d['generator']
         del parser_d['fieldnames']
 
-        pprint(parser_d)
-
+        if args.type == 'print':
+            pprint(parser_d)
+        else:
+            print pickle.dumps(parser_d)
     except Exception as exc:
-
         m = traceback.format_exc()
         parser.error(m)
         
@@ -270,4 +279,3 @@ def to_csv_program():
         m = traceback.format_exc()
         parser.error(m)
         
-

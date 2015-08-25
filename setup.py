@@ -11,6 +11,7 @@ setup(
         license='MIT',
         packages=['webassign'],
         install_requires=[
+                'csvu',
             ],
         scripts=[
                     'bin/webassign-to-csv',
