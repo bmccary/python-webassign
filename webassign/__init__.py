@@ -6,11 +6,18 @@ from cStringIO import StringIO
 from pprint import pprint
 import cPickle as pickle
 from itertools import izip
+import json
 from copy import copy
 from dateutil import parser as date_parser
+from functools import partial
 
 from csvu import writer_make
 from csvu.cli import default_arg_parser
+
+to_json = partial(json.dumps, sort_keys=True, indent=4, separators=(',', ': '))
+
+META_CHOICES = ['print', 'pickle', 'json']
+META_DEFAULT = 'json'
 
 class WADialect(csv.Dialect):
     doublequote = False
@@ -98,8 +105,8 @@ def to_meta_arg_parser():
         )
     parser.add_argument(
             '--type', 
-            choices=['print', 'pickle'],
-            default='print',
+            choices=META_CHOICES,
+            default=META_DEFAULT,
             help='The format of the output.'
         )
     return parser
@@ -123,8 +130,10 @@ def to_meta_program():
 
         if args.type == 'print':
             pprint(parser_d)
-        else:
+        elif args.type == 'pickle':
             print pickle.dumps(parser_d)
+        else:
+            print to_json(parser_d)
     except Exception as exc:
         m = traceback.format_exc()
         parser.error(m)
@@ -266,7 +275,7 @@ def to_csv_program():
         fieldnames1 = filter_d['fieldnames']
         
         writer_f = writer_make(
-                        fname=args.file1,
+                        file_or_path=args.file1,
                         dialect=args.dialect1,
                         fieldnames=fieldnames1,
                         headless=False,
